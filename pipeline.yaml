@@ -1,7 +1,7 @@
 ---
 project: VNF-Primary
 kind: PIPELINE
-name: Microservice Demo Build Deploy
+name: Moff microservice Demo Build Deploy
 enabled: true
 description: Builds each container image associated with the microservice and deploys it to a VMware Cloud
   PKS cluster
