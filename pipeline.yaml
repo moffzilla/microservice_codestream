@@ -1,5 +1,5 @@
 ---
-project: Lab
+project: VNF-Primary
 kind: PIPELINE
 name: Microservice Demo Build Deploy
 enabled: true
@@ -43,8 +43,8 @@ _inputMeta:
     mandatory: false
     description: ''
 ciWorkspace:
-  endpoint: Photon-Docker
-  image: harbor.humblelab.com/library/hlbuilder:latest
+  endpoint: Moff-Docker-GCP-200
+  image: moffzilla/moff-tools:latest
   registry: ''
   path: ''
   cache:
@@ -80,9 +80,9 @@ stages:
             Accept: application/json,
             Content-Type: application/json
           }
-          payload: '{"text":"The Deployment is successful!"}'
+          payload: '{"text":"Execution ${name} Deployment Complete"}'
           action: post
-          url: https://hooks.slack.com/services/T024JFTN4/BCCAECL4D/<slackwebhook>
+          url: https://hooks.slack.com/services/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
   Build:
     taskOrder:
     - DockerBuildDB
@@ -95,11 +95,12 @@ stages:
           process: [
             ]
           steps: [
+            git clone https://github.com/moffzilla/cmbu-bootcamp-app.git
             cd cmbu-bootcamp-app/frontend-tier,
-            'export IMAGE=harbor.humblelab.com/library/cmbu-app-frontend:latest',
-            'export DOCKER_HOST=tcp://192.168.1.182:2375',
-            docker login harbor.humblelab.com --username=admin --password=VMware123!,
-            docker build -t $IMAGE --file ./Dockerfile .,
+            'export IMAGE=moffzilla/cmbu-app-frontend:latest',
+            'export DOCKER_HOST=tcp://35.238.125.210:2375',
+            docker login --username=moffzilla --password=yourpassword,
+            docker build -t $IMAGE .,
             docker push $IMAGE]
           export: [
             IMAGE]
@@ -112,11 +113,12 @@ stages:
           process: [
             ]
           steps: [
+            git clone https://github.com/moffzilla/cmbu-bootcamp-app.git
             cd cmbu-bootcamp-app/db-tier,
-            'export IMAGE=harbor.humblelab.com/library/cmbu-db-app:latest',
-            'export DOCKER_HOST=tcp://192.168.1.182:2375',
-            docker login harbor.humblelab.com --username=admin --password=VMware123!,
-            docker build -t $IMAGE --file ./Dockerfile .,
+            'export IMAGE=moffzilla/cmbu-db-app:latest',
+            'export DOCKER_HOST=tcp://35.238.125.210:2375',
+            docker login --username=moffzilla --password=yourpassword,
+            docker build -t $IMAGE .,
             docker push $IMAGE]
           export: [
             IMAGE]
@@ -129,11 +131,12 @@ stages:
           process: [
             ]
           steps: [
+            git clone https://github.com/moffzilla/cmbu-bootcamp-app.git            
             cd cmbu-bootcamp-app/app-tier,
-            'export IMAGE=harbor.humblelab.com/library/cmbu-app-backend:latest',
-            'export DOCKER_HOST=tcp://192.168.1.182:2375',
-            docker login harbor.humblelab.com --username admin --password=VMware123!,
-            docker build -t $IMAGE --file ./Dockerfile .,
+            'export IMAGE=moffzilla/cmbu-app-backend:latest',
+            'export DOCKER_HOST=tcp://35.238.125.210:2375',
+            docker login --username=moffzilla --password=yourpassword,
+            docker build -t $IMAGE .,
             docker push $IMAGE]
           export: [
             IMAGE]
@@ -147,7 +150,7 @@ stages:
       Delete Workload:
         type: K8S
         endpoints:
-          kubernetesServer: Cdearkland - VKE
+          kubernetesServer: Moff-PKS-Cloud
         input:
           filePath: ''
           commit: ''
@@ -167,7 +170,7 @@ stages:
           pipelineName: ${name}
           expirationInDays: 3
           approvers: [
-            cdearkland@vmware.com]
+            hernandezf@vmware.com]
           description: K8s Deployment Successful. Destroy request received
           sendemail: false
   Deploy:
@@ -181,7 +184,7 @@ stages:
       Deploy App Tier:
         type: K8S
         endpoints:
-          kubernetesServer: Cdearkland - VKE
+          kubernetesServer: Moff-PKS-Cloud
         input:
           filePath: ''
           commit: ''
@@ -197,13 +200,13 @@ stages:
             \n    app: bootcamp\r\nspec:\r\n  selector:\r\n    matchLabels:\r\n      app: bootcamp\r\n\
             \      role: api\r\n      tier: backend\r\n  replicas: 1\r\n  template:\r\n    metadata:\r\
             \n      labels:\r\n        app: bootcamp\r\n        role: api\r\n        tier: backend\r\n\
-            \    spec:\r\n      containers:\r\n      - name: pyapi\r\n        image: harbor.humblelab.com/library/cmbu-app-backend:latest\
+            \    spec:\r\n      containers:\r\n      - name: pyapi\r\n        image: moffzilla/cmbu-app-backend:latest\
             \  # or just image: redis\r\n        ports:\r\n        - containerPort: 80"
           revision: n-1
       Create Namespace:
         type: K8S
         endpoints:
-          kubernetesServer: Cdearkland - VKE
+          kubernetesServer: Moff-PKS-Cloud
         input:
           filePath: ''
           commit: ''
@@ -219,7 +222,7 @@ stages:
       Expose Frontend LB:
         type: K8S
         endpoints:
-          kubernetesServer: Cdearkland - VKE
+          kubernetesServer: Moff-PKS-Cloud
         input:
           filePath: ''
           commit: ''
@@ -238,7 +241,7 @@ stages:
       Deploy Frontend:
         type: K8S
         endpoints:
-          kubernetesServer: Cdearkland - VKE
+          kubernetesServer: Moff-PKS-Cloud
         input:
           filePath: ''
           commit: ''
@@ -254,13 +257,13 @@ stages:
             \n  labels:\r\n    app: bootcamp\r\nspec:\r\n  selector:\r\n    matchLabels:\r\n      app:\
             \ bootcamp\r\n      role: web\r\n      tier: frontend\r\n  replicas: 2\r\n  template:\r\n\
             \    metadata:\r\n      labels:\r\n        app: bootcamp\r\n        role: web\r\n        tier:\
-            \ frontend\r\n    spec:\r\n      containers:\r\n      - name: frontend\r\n        image: harbor.humblelab.com/library/cmbu-app-frontend:latest\
+            \ frontend\r\n    spec:\r\n      containers:\r\n      - name: frontend\r\n        image: moffzilla/cmbu-app-frontend:latest\
             \  # or just image: redis\r\n        ports:\r\n        - containerPort: 80"
           revision: n-1
       Expose App Service:
         type: K8S
         endpoints:
-          kubernetesServer: Cdearkland - VKE
+          kubernetesServer: Moff-PKS-Cloud
         input:
           filePath: ''
           commit: ''
@@ -278,7 +281,7 @@ stages:
       Deploy DB:
         type: K8S
         endpoints:
-          kubernetesServer: Cdearkland - VKE
+          kubernetesServer: Moff-PKS-Cloud
         input:
           filePath: ''
           commit: ''
@@ -294,13 +297,13 @@ stages:
             \    app: bootcamp\r\nspec:\r\n  selector:\r\n    matchLabels:\r\n      app: bootcamp\r\n\
             \      role: db\r\n      tier: backend\r\n  replicas: 1\r\n  template:\r\n    metadata:\r\n\
             \      labels:\r\n        app: bootcamp\r\n        role: db\r\n        tier: backend\r\n \
-            \   spec:\r\n      containers:\r\n      - name: db\r\n        image: harbor.humblelab.com/library/cmbu-db-app:latest\r\
+            \   spec:\r\n      containers:\r\n      - name: db\r\n        image: moffzilla/cmbu-db-app:latest\r\
             \n        ports:\r\n        - containerPort: 5432"
           revision: n-1
       Expose DB Service:
         type: K8S
         endpoints:
-          kubernetesServer: Cdearkland - VKE
+          kubernetesServer: Moff-PKS-Cloud
         input:
           filePath: ''
           commit: ''
@@ -322,5 +325,5 @@ notifications:
     stage: Teardown
     payload: '{"text":"Your deployment of ${input.GIT_REPO_NAME} is waiting for approval to destroy"}'
     task: Approval Required
-    url: https://hooks.slack.com/services/T024JFTN4/BCCAECL4D/<slackwebhook>
+    url: https://hooks.slack.com/services/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
     event: WAITING
