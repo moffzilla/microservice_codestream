@@ -1,5 +1,5 @@
 ---
-project: VNF-Primary
+project: VNF-PKS
 kind: PIPELINE
 name: Moff microservice Demo Build Deploy
 enabled: true
